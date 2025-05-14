@@ -509,7 +509,7 @@ button:disabled {
     }
 
     .app-navigation button {
-        height: 80px;
+        height: 60px;
         width: 60px;
         margin-bottom: 5px;
         font-size: 0.7em;
