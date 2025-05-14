@@ -8,9 +8,30 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    padding-left: 80px; /* 為垂直導航欄預留空間 (電腦版) */
-    padding-bottom: 60px; /* 為底部固定動作按鈕預留空間 (手機版) */
-    padding-top: 50px; /* 為固定 header 預留空間 (手機版) */
+    padding-top: 60px;
+    /* 為固定 header (50px) + top-navigation (40px) 預留空間 */
+    padding-bottom: 60px;
+    /* 為底部固定動作按鈕預留空間 */
+    padding-left: 0;
+    /* 移除左側 padding */
+}
+
+.top-navigation {
+    position: fixed;
+    top: 50px;
+    /* 在 header 下方 */
+    left: 0;
+    width: 100%;
+    background-color: #f8f8f8;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    /* 水平分散按鈕 */
+    padding: 10px 15px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    z-index: 99;
+    overflow-x: auto;
+    /* 如果按鈕過多，允許水平捲動 */
 }
 
 .app-container {
@@ -30,7 +51,8 @@ body {
     left: 0;
     width: 100%;
     z-index: 100;
-    padding-left: 0; /* 手機版不留左側空間 */
+    padding-left: 0;
+    /* 手機版不留左側空間 */
 }
 
 .app-header h1 {
@@ -42,26 +64,35 @@ body {
 .app-content {
     flex-grow: 1;
     padding: 15px;
-    padding-top: calc(15px + 50px + 80px); /* 為 header 和導航預留空間 (手機版) */
+    padding-top: calc(15px + 50px + 80px);
+    /* 為 header 和導航預留空間 (手機版) */
     padding-left: 15px;
-    padding-bottom: 60px; /* 為底部固定動作按鈕預留空間 (手機版) */
+    padding-bottom: 60px;
+    /* 為底部固定動作按鈕預留空間 (手機版) */
     overflow-y: auto;
 }
 
 .app-navigation {
     position: fixed;
-    top: 50px; /* 在 header 下方 */
+    top: 50px;
+    /* 在 header 下方 */
     left: 0;
-    width: 70px; /* 可以調整寬度 */
-    bottom: auto; /* 不再固定在底部 */
-    height: auto; /* 根據內容自動調整高度 */
+    width: 70px;
+    /* 可以調整寬度 */
+    bottom: auto;
+    /* 不再固定在底部 */
+    height: auto;
+    /* 根據內容自動調整高度 */
     flex-direction: column;
     align-items: center;
     padding: 10px 0;
     box-shadow: 1px 0 2px rgba(0, 0, 0, 0.1);
-    z-index: 99; /* 在內容之上 */
-    overflow-y: auto; /* 允許垂直捲動 */
-    max-height: 50vh; /* 設定最大高度，避免佔滿整個螢幕 */
+    z-index: 99;
+    /* 在內容之上 */
+    overflow-y: auto;
+    /* 允許垂直捲動 */
+    max-height: 50vh;
+    /* 設定最大高度，避免佔滿整個螢幕 */
 }
 
 .app-navigation button {
@@ -89,7 +120,9 @@ body {
     display: none;
 }
 
-h2, h3, h4 {
+h2,
+h3,
+h4 {
     color: #333;
     margin-top: 10px;
     margin-bottom: 5px;
@@ -112,7 +145,9 @@ h4 {
     margin-top: 15px;
 }
 
-.setup-section, .game-section, .timeline-section {
+.setup-section,
+.game-section,
+.timeline-section {
     background-color: white;
     padding: 15px;
     margin-bottom: 15px;
@@ -320,47 +355,57 @@ button:disabled {
 }
 
 .event.rest {
-    background-color: #4CAF50; /* 休息：綠色 */
+    background-color: #4CAF50;
+    /* 休息：綠色 */
 }
 
 .event.buy {
-    background-color: #007bff; /* 購買成功：藍色 */
+    background-color: #007bff;
+    /* 購買成功：藍色 */
 }
 
 .event.buy_fail {
-    background-color: #dc3545; /* 購買失敗：紅色 */
+    background-color: #dc3545;
+    /* 購買失敗：紅色 */
 }
 
 .event.bidding {
-    background-color: #ffc107; /* 競標中：黃色 */
+    background-color: #ffc107;
+    /* 競標中：黃色 */
     color: #333;
 }
 
 .event.bidding.win {
-    background-color: #28a745; /* 競標成功：更深的綠色 */
+    background-color: #28a745;
+    /* 競標成功：更深的綠色 */
 }
 
 .event.bidding.tie_fail {
-    background-color: #6c757d; /* 平手流標：灰色 */
+    background-color: #6c757d;
+    /* 平手流標：灰色 */
 }
 
 .event.bidding.pass_all,
 .event.bidding.pass {
-    background-color: #f8f9fa; /* 放棄競標：淺灰色 */
+    background-color: #f8f9fa;
+    /* 放棄競標：淺灰色 */
     color: #333;
     border: 1px solid #ccc;
 }
 
 .event.bidding.lose {
-    background-color: #e03131; /* 競標失敗：更深的紅色 */
+    background-color: #e03131;
+    /* 競標失敗：更深的紅色 */
 }
 
 .event.phase_tick {
-    background-color: #6f42c1; /* 回合推進：紫色 */
+    background-color: #6f42c1;
+    /* 回合推進：紫色 */
 }
 
 .event.manual_adjust {
-    background-color: #fd7e14; /* 手動調整：橘色 */
+    background-color: #fd7e14;
+    /* 手動調整：橘色 */
 }
 
 .tooltip {
@@ -397,23 +442,26 @@ button:disabled {
 @media (max-width: 600px) {
     body {
         padding-left: 0;
-        padding-top: 100px; /* 為固定導航預留空間 */
-        padding-bottom: 60px; /* 為底部固定動作按鈕預留空間 */
+        padding-top: 100px;
+        /* 為固定導航預留空間 */
+        padding-bottom: 60px;
+        /* 為底部固定動作按鈕預留空間 */
     }
 
-    .app-header {
-        padding-left: 0;
+    body {
+        padding-top: 90px;
+        /* 保持頂部 padding */
     }
 
     .app-content {
-        padding-top: calc(15px + 50px + 80px); /* 為 header 和導航預留空間 */
-        padding-left: 15px;
-        padding-bottom: 60px;
+        padding-top: calc(15px + 50px + 40px);
+        /* 保持頂部 padding */
     }
 
     .app-navigation {
         position: fixed;
-        top: 50px; /* 在 header 下方 */
+        top: 50px;
+        /* 在 header 下方 */
         left: 0;
         width: 70px;
         bottom: auto;
@@ -436,6 +484,33 @@ button:disabled {
 
     .app-navigation .scroll-adjust {
         display: none;
+    }
+
+    .top-navigation {
+        position: fixed;
+        top: 50px;
+        /* 在 header 下方 */
+        left: 0;
+        width: 100%;
+        background-color: #f8f8f8;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        /* 水平分散按鈕 */
+        padding: 10px 15px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        z-index: 99;
+        overflow-x: auto;
+        /* 如果按鈕過多，允許水平捲動 */
+    }
+
+    .top-navigation button {
+        margin-right: 10px;
+    }
+
+    .top-navigation .scroll-adjust {
+        margin-left: auto;
+        /* 將微調按鈕推到右側 */
     }
 
     .timeline-events {
