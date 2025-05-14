@@ -15,13 +15,15 @@
         </header>
 
         <nav class="top-navigation">
-            <button onclick="scrollToSection('roundTitle')">市場區</button>
-            <button onclick="scrollToSection('timelineSection')">時間軸</button>
-            <button onclick="scrollToTop()">最上</button>
-            <button onclick="scrollToBottom()">最下</button>
-            <div class="scroll-adjust">
-                <button onclick="scrollByAmount(-50)">微調向上</button>
-                <button onclick="scrollByAmount(50)">微調向下</button>
+            <div class="nav-row">
+                <button onclick="scrollToSection('roundTitle')">市場區</button>
+                <button onclick="scrollToTop()">最上</button>
+                <button class="scroll-adjust-button" onclick="scrollByAmount(-200)">微調向上</button>
+            </div>
+            <div class="nav-row">
+                <button onclick="scrollToSection('timelineSection')">時間軸</button>
+                <button onclick="scrollToBottom()">最下</button>
+                <button class="scroll-adjust-button" onclick="scrollByAmount(200)">微調向下</button>
             </div>
         </nav>
 

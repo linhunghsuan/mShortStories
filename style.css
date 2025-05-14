@@ -18,20 +18,54 @@ body {
 
 .top-navigation {
     position: fixed;
-    top: 50px;
-    /* 在 header 下方 */
+    top: 50px; /* 在 header 下方 */
     left: 0;
     width: 100%;
     background-color: #f8f8f8;
     display: flex;
-    align-items: center;
-    justify-content: space-around;
-    /* 水平分散按鈕 */
+    flex-direction: column; /* 改為垂直排列子元素 (兩行 div) */
     padding: 10px 15px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     z-index: 99;
-    overflow-x: auto;
-    /* 如果按鈕過多，允許水平捲動 */
+}
+
+.top-navigation .nav-row {
+    display: flex;
+    justify-content: space-around; /* 行內按鈕平均分配空間 */
+    align-items: center;
+    width: 100%;
+    margin-bottom: 5px; /* 行之間的間距 */
+}
+
+.top-navigation .nav-row:last-child {
+    margin-bottom: 0; /* 移除最後一行的底部間距 */
+}
+
+.top-navigation button {
+    height: 50px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #eee;
+    color: #333;
+    cursor: pointer;
+    font-size: 0.9em;
+    text-align: center;
+    white-space: nowrap;
+    flex-grow: 1; /* 讓按鈕在行內平均分配剩餘空間 */
+    margin: 0 2px; /* 按鈕之間的間距 */
+}
+
+.top-navigation button:first-child {
+    margin-left: 0;
+}
+
+.top-navigation button:last-child {
+    margin-right: 0;
+}
+
+.top-navigation .scroll-adjust {
+    display: none; /* 在頂部導航中隱藏原始的 scroll-adjust 容器 */
 }
 
 .app-container {
@@ -64,7 +98,7 @@ body {
 .app-content {
     flex-grow: 1;
     padding: 15px;
-    padding-top: calc(15px + 50px + 80px);
+    padding-top: calc(15px + 50px + 50px);
     /* 為 header 和導航預留空間 (手機版) */
     padding-left: 15px;
     padding-bottom: 60px;
@@ -475,6 +509,7 @@ button:disabled {
     }
 
     .app-navigation button {
+        height: 40px;
         width: 60px;
         margin-bottom: 5px;
         font-size: 0.7em;
@@ -502,10 +537,17 @@ button:disabled {
         z-index: 99;
         overflow-x: auto;
         /* 如果按鈕過多，允許水平捲動 */
+        flex-direction: column;
     }
 
+    .top-navigation .nav-row {
+        justify-content: space-around; /* 行內按鈕平均分配空間 */
+    }
+    
     .top-navigation button {
-        margin-right: 10px;
+        font-size: 0.8em;
+        padding: 6px 8px;
+        margin: 0 1px;
     }
 
     .top-navigation .scroll-adjust {
