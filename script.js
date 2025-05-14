@@ -1,3 +1,5 @@
+// script.js
+
 // ========= 全域遊戲狀態變數 =========
 let gameStateBeforeNextRound = null;
 let currentBidding = {
@@ -27,9 +29,9 @@ let characterNames = [];
 const MAX_TIME = 12;
 const REST_RECOVERY_AMOUNT = 6;
 
-const TIME_UNIT_WIDTH = 30;
-const MIN_EVENT_SEGMENT_WIDTH = TIME_UNIT_WIDTH; // 讓0時間變化的事件也佔據1個單位寬
-const EVENT_SEGMENT_HEIGHT = '25px';
+const TIME_UNIT_WIDTH = 40; // 手機上可以稍微調整寬度
+const MIN_EVENT_SEGMENT_WIDTH = TIME_UNIT_WIDTH;
+const EVENT_SEGMENT_HEIGHT = '30px'; // 增加高度方便觸控
 
 let availableCards = [];
 
@@ -98,10 +100,9 @@ function selectPlayerCountUI(count) {
         clickedButton.classList.add('selected');
         displayCharacterSelection(count);
         document.getElementById('confirmCharactersButton').disabled = false;
-        document.getElementById('confirmCharactersButton').style.backgroundColor = ''; // 恢復預設綠色
+        document.getElementById('confirmCharactersButton').classList.remove('selected');
         document.getElementById('startButton').disabled = true;
         document.getElementById('characterSelectionError').textContent = '';
-        document.getElementById('confirmCharactersButton').classList.remove('selected');
     }
 }
 
@@ -184,49 +185,49 @@ function startGame() {
     PLAYER_ID_MAP.forEach(pid => {
         const playerElement = document.getElementById('player' + pid);
         const timelinePlayerElement = document.getElementById('timeline' + pid);
-        const playerTitleElement = document.getElementById('playerTitle' + pid); // HTML中為 playerA > h3
-        const timelineTitleElement = document.getElementById('timelinePlayerTitle' + pid); // HTML中為 timelineA > h3
+        const playerTitleElement = document.getElementById('playerTitle' + pid);
+        const timelineTitleElement = document.getElementById('timelinePlayerTitle' + pid);
         const manualControls = document.getElementById('manualControls' + pid);
 
         if (playerElement) playerElement.style.display = 'none';
         if (timelinePlayerElement) timelinePlayerElement.style.display = 'none';
-        if (playerTitleElement) playerTitleElement.textContent = `${pid}玩家`; // 重設標題
-        if (timelineTitleElement) timelineTitleElement.textContent = `${pid}玩家 時間軸`; // 重設標題
-        if (manualControls) manualControls.innerHTML = ''; // 清空手動按鈕
-
+        if (playerTitleElement) playerTitleElement.textContent = `${pid}玩家`;
+        if (timelineTitleElement) timelineTitleElement.textContent = `${pid}玩家 時間軸`;
+        if (manualControls) manualControls.innerHTML = '';
     });
 
     players.forEach(p_id => {
-        document.getElementById('player' + p_id).style.display = 'flex'; // .player is flex column
+        document.getElementById('player' + p_id).style.display = 'flex';
         document.getElementById('timeline' + p_id).style.display = 'block';
 
         const selectedCharNameKey = playerCharacterSelections[p_id];
         const character = characterSettings[selectedCharNameKey];
         playerTimes[p_id] = character.startTime;
 
-        document.querySelector(`#player${p_id} > h3`).textContent = `${p_id}玩家 (${character.name})`;
+        document.querySelector(`#player${p_id} > h4`).textContent = `${p_id}玩家 (${character.name})`;
         document.querySelector(`#timeline${p_id} > h3`).textContent = `${p_id}玩家 (${character.name}) (${character.specialAbility}) 時間軸`;
 
         timeline[p_id] = [];
         updateTimeBar(p_id);
     });
 
-    document.querySelector('.setup').style.display = 'none';
-    document.querySelector('.game-area').style.display = 'block';
-    document.getElementById('timeline').style.display = 'block';
+    document.querySelector('.setup-section').style.display = 'none';
+    document.querySelector('.game-section').style.display = 'block';
+    document.getElementById('timelineSection').style.display = 'block';
     round = 1;
     document.getElementById('roundTitle').textContent = '第' + round + '回合';
     document.getElementById('marketSelection').style.display = 'block';
     document.getElementById('playerActions').style.display = 'none';
     document.getElementById('backToMarketSelectionBtn').style.display = 'none';
     drawMarket();
+    renderTimeline(); // 初始渲染時間軸
 }
 
 // ========= 市場階段函式 =========
 function drawMarket() {
     const marketArea = document.getElementById('marketArea');
     marketArea.innerHTML = '';
-    selectedMarket = []; // 清空上一輪在市場上點選的卡片
+    selectedMarket = [];
 
     if (availableCards.length === 0) {
         marketArea.innerHTML = '<p>所有卡片已被使用完畢！</p>';
@@ -234,7 +235,6 @@ function drawMarket() {
         return;
     }
 
-    // 列出所有 availableCards 供選擇
     availableCards.forEach(cardId => {
         const btn = document.createElement('button');
         const cardInfo = cardData[cardId];
@@ -243,17 +243,19 @@ function drawMarket() {
             return;
         }
         btn.textContent = `${cardInfo.name} (需時: ${cardInfo.price})`;
-        btn.style.background = '#4CAF50'; // 預設未選中
+        btn.style.backgroundColor = '#f8f8f8';
+        btn.style.color = '#333';
         btn.onclick = () => toggleMarketCard(cardId, btn);
         marketArea.appendChild(btn);
     });
-    updateConfirmMarketButtonState(); // 根據可選數量決定按鈕初始狀態
+    updateConfirmMarketButtonState();
 }
 
 function toggleMarketCard(cardId, btn) {
     const isSelected = selectedMarket.includes(cardId);
     if (isSelected) {
         selectedMarket = selectedMarket.filter(c => c !== cardId);
+        btn.classList.remove('selected');
     } else {
         const maxSelection = Math.min(3, availableCards.length);
         if (selectedMarket.length >= maxSelection) {
@@ -261,26 +263,14 @@ function toggleMarketCard(cardId, btn) {
             return;
         }
         selectedMarket.push(cardId);
+        btn.classList.add('selected');
     }
-    updateMarketButtonState(cardId, btn);
     updateConfirmMarketButtonState();
-}
-
-function updateMarketButtonState(cardId, btn) {
-    if (selectedMarket.includes(cardId)) {
-        btn.style.background = '#2196F3';
-    } else {
-        btn.style.background = '#4CAF50';
-    }
 }
 
 function updateConfirmMarketButtonState() {
     const maxSelection = Math.min(3, availableCards.length);
-    if (availableCards.length === 0) {
-        document.getElementById('confirmMarket').disabled = true;
-    } else {
-        document.getElementById('confirmMarket').disabled = selectedMarket.length !== maxSelection;
-    }
+    document.getElementById('confirmMarket').disabled = selectedMarket.length !== maxSelection;
 }
 
 function confirmMarket() {
@@ -301,9 +291,8 @@ function confirmMarket() {
 
 function marketStep() {
     players.forEach(p => {
-        updateActionButtonsForPlayer(p); // ⬅️ 核心邏輯統一處理於此
+        updateActionButtonsForPlayer(p);
 
-        // 生成手動時間調整按鈕
         const manualControlsContainer = document.getElementById('manualControls' + p);
         manualControlsContainer.innerHTML = '';
 
@@ -317,7 +306,6 @@ function marketStep() {
 
         manualControlsContainer.appendChild(plusBtn);
         manualControlsContainer.appendChild(minusBtn);
-        manualControlsContainer.style.display = 'flex';
     });
 
     checkAllActions();
@@ -341,15 +329,11 @@ function createActionButton(player, choice, displayIndex) {
     document.getElementById('actions' + player).appendChild(btn);
 }
 
-// 「重設市場卡片選擇」按鈕的邏輯 (在市場選擇階段使用)
 function resetMarketCardSelection() {
     selectedMarket = [];
-    // drawMarket 會重新列出所有 availableCards 並重置其按鈕狀態
     drawMarket();
-    // updateConfirmMarketButtonState() 會在 drawMarket 後被間接調用或 toggleMarketCard 中處理
 }
 
-// 「返回市場選擇」按鈕的邏輯 (在玩家行動選擇階段使用)
 function backToMarketSelection() {
     console.log("backToMarketSelection() called");
     playerActions = {};
@@ -357,16 +341,15 @@ function backToMarketSelection() {
         const actionsArea = document.getElementById('actions' + p);
         if (actionsArea) actionsArea.innerHTML = '';
         const manualControls = document.getElementById('manualControls' + p);
-        if (manualControls) manualControls.style.display = 'none'; // 隱藏手動調整按鈕
+        if (manualControls) manualControls.innerHTML = '';
     });
-    marketCards = []; // 清空本回合已確定的市場卡片
-    // selectedMarket 應在 drawMarket 開始時清空
+    marketCards = [];
 
     document.getElementById('playerActions').style.display = 'none';
     document.getElementById('marketSelection').style.display = 'block';
     document.getElementById('backToMarketSelectionBtn').style.display = 'none';
     document.getElementById('nextRoundBtn').disabled = true;
-    drawMarket(); // 重新繪製市場，列出所有 availableCards
+    drawMarket();
 }
 
 // ========= 玩家行動函式 =========
@@ -376,8 +359,6 @@ function selectAction(player, choice, clickedButton) {
 
     if (playerActions[player] === choice) {
         playerActions[player] = null;
-        // 重新啟用按鈕，但要根據費用判斷
-        // 重新建立該玩家的 action 按鈕們
         updateActionButtonsForPlayer(player);
     } else {
         playerActions[player] = choice;
@@ -432,14 +413,10 @@ function updateActionButtonsForPlayer(p) {
     createActionButton(p, '休息');
 }
 
-
-
 function checkAllActions() {
     const allPlayersActed = players.every(p => playerActions[p] !== null && playerActions[p] !== undefined);
     document.getElementById('nextRoundBtn').disabled = !allPlayersActed;
 }
-
-// 新增函式：手動調整玩家時間
 function adjustPlayerTimeManually(playerId, amount) {
     if (!players.includes(playerId) || !playerTimes.hasOwnProperty(playerId)) {
         console.warn(`adjustPlayerTimeManually: 無效的玩家ID ${playerId} 或時間資料未初始化`);
@@ -447,226 +424,81 @@ function adjustPlayerTimeManually(playerId, amount) {
     }
 
     const timeBeforeAdjust = playerTimes[playerId];
-    let newTime = playerTimes[playerId] + amount;
-    newTime = Math.max(0, Math.min(newTime, MAX_TIME));
+    playerTimes[playerId] += amount;
+    playerTimes[playerId] = Math.max(0, playerTimes[playerId]); // 確保時間不為負
 
-    const actualChange = newTime - timeBeforeAdjust;
+    timeline[playerId].push({
+        type: 'manual_adjust',
+        subtype: amount > 0 ? 'plus' : 'minus',
+        detail: `手動調整時間 ${amount > 0 ? '+' : ''}${amount}`,
+        timeChange: amount,
+        timeAfter: playerTimes[playerId],
+        round: round
+    });
 
-    if (actualChange !== 0) {
-        playerTimes[playerId] = newTime;
-        timeline[playerId].push({
-            type: 'manual_adjust',
-            subtype: actualChange > 0 ? 'plus' : 'minus',
-            detail: `手動${actualChange > 0 ? '加時' : '減時'}：${Math.abs(actualChange)}`,
-            timeChange: actualChange,
-            timeAfter: playerTimes[playerId],
-            round: round
-        });
-        updateTimeBar(playerId);
-        renderTimeline();
-        console.log(`玩家 ${playerId} 手動調整時間： ${amount > 0 ? '+' : ''}${actualChange}。新時間: ${playerTimes[playerId]}`);
-        marketStep();
-    } else {
-        console.log(`玩家 ${playerId} 手動調整時間無效 (已達時間上下限)`);
-    }
+    updateTimeBar(playerId);
+    renderTimeline();
 }
 
-
-// ========= 核心遊戲邏輯: 回合進程 & 競標 =========
+// ========= 回合結束與下一回合 =========
 async function nextRound() {
-    console.log("nextRound() called. Round:", round, "Player Actions:", JSON.parse(JSON.stringify(playerActions)));
-
-    document.getElementById('backToMarketSelectionBtn').style.display = 'none';
-    players.forEach(p => {
-        const manualControls = document.getElementById('manualControls' + p);
-        if (manualControls) manualControls.style.display = 'none';
-    });
-
-    for (const p of players) {
-        const action = playerActions[p];
-        if (action && action !== '休息') {
-            if (!cardData[action]) {
-                console.error(`嚴重錯誤：玩家 ${p} 選擇的卡片ID ${action} 在 cardData 中找不到！`);
-                alert(`錯誤：找不到卡片 ${action} 的資料！遊戲可能無法繼續。`);
-                document.getElementById('nextRoundBtn').disabled = true;
-                return;
-            }
-        }
-    }
-
+    document.getElementById('nextRoundBtn').disabled = true;
     gameStateBeforeNextRound = {
-        playerTimes: JSON.parse(JSON.stringify(playerTimes)),
-        timeline: JSON.parse(JSON.stringify(timeline)),
+        playerTimes: { ...playerTimes },
+        timeline: { ...timeline },
         round: round,
-        availableCards: JSON.parse(JSON.stringify(availableCards)),
-        marketCards: JSON.parse(JSON.stringify(marketCards))
+        availableCards: [...availableCards],
+        marketCards: [...marketCards]
     };
 
-    const choiceCount = {};
-    players.forEach(p => {
-        const action = playerActions[p];
+    for (const player of players) {
+        const action = playerActions[player];
         if (action === '休息') {
-            const timeBeforeRestThisPlayer = playerTimes[p];
-            playerTimes[p] = Math.min(playerTimes[p] + REST_RECOVERY_AMOUNT, MAX_TIME);
-            timeline[p].push({
+            playerTimes[player] = Math.min(MAX_TIME, playerTimes[player] + REST_RECOVERY_AMOUNT);
+            timeline[player].push({
                 type: 'rest',
-                subtype: 'recover',
-                detail: `恢復時間：+${REST_RECOVERY_AMOUNT}`,
-                timeChange: playerTimes[p] - timeBeforeRestThisPlayer,
-                timeAfter: playerTimes[p],
+                detail: `休息恢復 ${REST_RECOVERY_AMOUNT} 時間`,
+                timeChange: REST_RECOVERY_AMOUNT,
+                timeAfter: playerTimes[player],
                 round: round
             });
-        } else if (action) {
-            choiceCount[action] = (choiceCount[action] || []).concat(p);
-        }
-    });
+        } else if (typeof action === 'number' && cardData[action]) {
+            const cardId = action;
+            const cardInfo = cardData[cardId];
+            const bidders = players.filter(p => playerActions[p] === cardId);
 
-    let biddingWasCancelledByUserAction = false;
-    const chosenCardIds = Object.keys(choiceCount).map(id => parseInt(id));
-
-    for (const cardId of chosenCardIds) {
-        const bidders = choiceCount[cardId];
-        const currentCardInfo = cardData[cardId];
-
-        if (!currentCardInfo) {
-            console.error(`nextRound: 迴圈中卡片ID ${cardId} 的資料在 cardData 中找不到，跳過處理。`);
-            continue;
-        }
-
-        if (bidders.length === 1) {
-            const p = bidders[0];
-            const price = currentCardInfo.price;
-            if (playerTimes[p] >= price) { // 理論上 marketStep 已確保此條件
-                playerTimes[p] -= price;
-                timeline[p].push({
-                    type: 'buy',
-                    subtype: 'direct',
-                    detail: `購買成功：${currentCardInfo.name}(價${price})`,
-                    timeChange: -price,
-                    timeAfter: playerTimes[p],
-                    round: round
-                });
+            if (bidders.length > 0) {
+                console.log(`卡片 ${cardInfo.name} 開始競標，競標者：${bidders.join(', ')}`);
+                const biddingResultCancelled = await performBiddingProcess(cardId, bidders);
+                if (!biddingResultCancelled) {
+                    availableCards = availableCards.filter(id => id !== cardId);
+                }
             } else {
-                timeline[p].push({
-                    type: 'buy_fail',
-                    subtype: 'insufficient_funds_direct',
-                    detail: `購買失敗：${currentCardInfo.name}(需${price}，餘${playerTimes[p]})`,
-                    timeChange: 0,
-                    timeAfter: playerTimes[p],
-                    round: round
+                console.log(`卡片 ${cardInfo.name} 無人競標`);
+                bidders.forEach(p => {
+                    timeline[p].push({
+                        type: 'buy_fail',
+                        detail: `無人競標：${cardInfo.name}(${cardInfo.price})`,
+                        timeChange: 0,
+                        timeAfter: playerTimes[p],
+                        round: round
+                    });
                 });
             }
-        } else if (bidders.length > 1) {
-            console.log(`卡片 (${currentCardInfo.name}) 進入競標。參與者: ${bidders.join(', ')}`);
-
-            // 預先為每位競標者加上一個 placeholder
-            const placeholderIndexes = {};
-            bidders.forEach(p => {
-                const placeholder = {
-                    type: 'phase_tick',
-                    subtype: 'pre_bidding_placeholder',
-                    detail: `準備競標：${currentCardInfo.name}`,
-                    timeChange: 0,
-                    timeAfter: playerTimes[p],
-                    round: round
-                };
-                placeholderIndexes[p] = timeline[p].length;
-                timeline[p].push(placeholder);
-            });
-
-            const userCancelledBiddingWindow = await performBiddingProcess(cardId, bidders);
-
-            if (userCancelledBiddingWindow) {
-                biddingWasCancelledByUserAction = true;
-                console.log(`卡片 (${currentCardInfo.name}) 的競標取消`);
-                break;
-            }
-
-            let winnerOfThisBid = null;
-            for (const p_bidder of bidders) {
-                if (timeline[p_bidder] && timeline[p_bidder].length > 0) {
-                    const recentEvent = timeline[p_bidder][timeline[p_bidder].length - 1];
-                    if (recentEvent && recentEvent.type === 'bidding' && recentEvent.subtype === 'win' &&
-                        recentEvent.round === round && recentEvent.detail && recentEvent.detail.includes(currentCardInfo.name)) {
-                        winnerOfThisBid = p_bidder;
-                        break;
-                    }
-                }
-            }
-
-            // 根據勝敗與放棄情況決定是否替換 placeholder 或移除
-            bidders.forEach(p => {
-                const lastIndex = placeholderIndexes[p];
-                const isLoser = (p !== winnerOfThisBid);
-                const gaveUp = timeline[p].some(
-                    event => event.type === 'bidding' &&
-                    event.subtype === 'give_up' &&
-                    event.round === round
-                );
-
-                if (isLoser || gaveUp) {
-                    timeline[p].splice(lastIndex, 1);
-                } else {
-                    timeline[p][lastIndex] = {
-                        ...timeline[p][lastIndex],
-                        subtype: 'loser_tick',
-                        detail: `競標成功：${currentCardInfo.name}`
-                    };
-                }
-            });
         }
+        updateTimeBar(player);
     }
 
-    if (biddingWasCancelledByUserAction) {
-        console.log("nextRound processing halted due to user cancelling a bid. State was rolled back by cancelBidding function.");
-        return;
-    }
-
-    const cardsOnMarketThisRound = gameStateBeforeNextRound.marketCards;
-    if (cardsOnMarketThisRound && cardsOnMarketThisRound.length > 0) {
-        console.log(`回合 ${round} 結束，棄置市場上出現過的卡片: ${cardsOnMarketThisRound.join(', ')}`);
-        cardsOnMarketThisRound.forEach(cardIdToRemove => {
-            const indexInAvailable = availableCards.indexOf(cardIdToRemove);
-            if (indexInAvailable > -1) {
-                availableCards.splice(indexInAvailable, 1);
-                const cardInfo = cardData[cardIdToRemove] || {
-                    name: `ID ${cardIdToRemove}`
-                };
-                console.log(`卡片 ${cardIdToRemove} (${cardInfo.name}) 已從可用卡片池中移除`);
-            } else {
-                const cardInfo = cardData[cardIdToRemove] || {
-                    name: `ID ${cardIdToRemove}`
-                };
-                console.warn(`嘗試棄置市場卡片 ${cardIdToRemove} (${cardInfo.name}) 時，它已不在 availableCards 中 (可能已被購買或競標成功)。`);
-            }
-        });
-        console.log(`棄置操作後，可用卡片剩餘: ${availableCards.length}`);
-    }
-
-    round++;
-    document.getElementById('roundTitle').textContent = '第' + round + '回合';
     playerActions = {};
-    document.getElementById('nextRoundBtn').disabled = true;
-    updateAllTimeBars();
-    renderTimeline();
-    gameStateBeforeNextRound = null;
-    console.log("nextRound completed. Advancing to round:", round);
-
-    // 檢查遊戲結束條件
-    // 如果可用卡片為0，並且當前市場選擇區也沒有卡片按鈕（表示drawMarket也抽不出卡了）
-    const marketAreaButtons = document.getElementById('marketArea').getElementsByTagName('button');
-    if (availableCards.length === 0 && marketAreaButtons.length === 0) {
-        alert("所有卡片均已處理完畢，遊戲結束！");
-        document.getElementById('marketSelection').innerHTML = '<h2>遊戲結束</h2>';
-        document.getElementById('playerActions').style.display = 'none';
-        return;
-    }
-
+    marketCards = [];
+    selectedMarket = [];
     document.getElementById('marketSelection').style.display = 'block';
     document.getElementById('playerActions').style.display = 'none';
-    selectedMarket = [];
-    marketCards = [];
+    document.getElementById('backToMarketSelectionBtn').style.display = 'none';
     drawMarket();
+    round++;
+    document.getElementById('roundTitle').textContent = '第' + round + '回合';
+    renderTimeline();
 }
 
 async function performBiddingProcess(cardId, bidders) {
@@ -685,7 +517,7 @@ function promptNextBidder() {
     if (oldWindow) oldWindow.remove();
 
     const biddingWindow = document.createElement('div');
-    biddingWindow.className = 'bidding-window';
+    biddingWindow.className = 'bidding-window app-modal'; // 添加 app-modal 樣式
 
     const player = currentBidding.bidders[currentBidding.step];
     const maxBid = playerTimes[player];
@@ -700,40 +532,48 @@ function promptNextBidder() {
     const playerCharNameKey = playerCharacterSelections[player];
     const playerCharInfo = characterSettings[playerCharNameKey];
 
-    biddingWindow.innerHTML = `<h3>玩家 ${player} (${playerCharInfo.name}) 出價 (擁有時間: ${maxBid})</h3>`;
-    biddingWindow.innerHTML += `<p>競標 ${cardInfoForBid.name} (原價/最低出價: ${minBid})</p>`;
+    biddingWindow.innerHTML = `<h3>玩家 ${player} (${playerCharInfo.name}) 出價</h3>`;
+    biddingWindow.innerHTML += `<p>競標 ${cardInfoForBid.name} (最低出價: ${minBid}, 擁有時間: ${maxBid})</p>`;
 
     if (maxBid >= minBid) {
+        const bidOptions = document.createElement('div');
+        bidOptions.className = 'bid-options';
         for (let bid = minBid; bid <= maxBid; bid++) {
             const bidBtn = document.createElement('button');
             bidBtn.textContent = `出價 ${bid}`;
             bidBtn.onclick = () => handleBid(player, bid);
-            biddingWindow.appendChild(bidBtn);
+            bidOptions.appendChild(bidBtn);
         }
+        biddingWindow.appendChild(bidOptions);
     } else {
-        biddingWindow.innerHTML += `<p>您的時間不足 ${minBid}，無法對此卡片進行最低出價。</p>`;
+        biddingWindow.innerHTML += `<p>您的時間不足 ${minBid}，無法進行最低出價。</p>`;
     }
 
+    const actionButtons = document.createElement('div');
+    actionButtons.className = 'action-buttons';
+
     const passBtn = document.createElement('button');
-    passBtn.textContent = '放棄出價';
+    passBtn.textContent = '放棄';
     passBtn.onclick = () => handleBid(player, 0);
-    biddingWindow.appendChild(passBtn);
+    actionButtons.appendChild(passBtn);
 
     if (currentBidding.step > 0) {
         const backBtn = document.createElement('button');
-        backBtn.textContent = '← 回到上一位出價者';
+        backBtn.textContent = '← 上一位';
         backBtn.onclick = () => {
             currentBidding.step--;
             currentBidding.bids.pop();
             promptNextBidder();
         };
-        biddingWindow.appendChild(backBtn);
+        actionButtons.appendChild(backBtn);
     }
 
     const cancelBtnElement = document.createElement('button');
-    cancelBtnElement.textContent = '✖ 取消整個競標 (回溯本回合行動)';
+    cancelBtnElement.textContent = '✖ 取消競標';
     cancelBtnElement.onclick = () => cancelBidding(true);
-    biddingWindow.appendChild(cancelBtnElement);
+    actionButtons.appendChild(cancelBtnElement);
+
+    biddingWindow.appendChild(actionButtons);
 
     document.body.appendChild(biddingWindow);
 }
@@ -945,7 +785,6 @@ function updateTimeBar(player) {
 function updateAllTimeBars() {
     players.forEach(p => updateTimeBar(p));
 }
-
 function renderTimeline() {
     players.forEach(p => {
         const eventsDiv = document.getElementById('events' + p);
@@ -970,10 +809,6 @@ function renderTimeline() {
             if (!isNaN(timeChangeNum) && timeChangeNum !== 0) {
                 calculatedWidthPx = Math.abs(timeChangeNum) * TIME_UNIT_WIDTH;
             }
-            // 確保即使 timeChangeNum 很小 (例如 0.1) 導致 calculatedWidthPx 小於 MIN_EVENT_SEGMENT_WIDTH，
-            // 也至少使用 MIN_EVENT_SEGMENT_WIDTH。
-            // 因為 MIN_EVENT_SEGMENT_WIDTH = TIME_UNIT_WIDTH，這也確保了 timeChangeNum 的絕對值為1的事件
-            // 和 timeChangeNum 為0的事件視覺寬度相同。
             calculatedWidthPx = Math.max(calculatedWidthPx, MIN_EVENT_SEGMENT_WIDTH);
 
             segment.style.width = calculatedWidthPx + 'px';
@@ -1008,10 +843,11 @@ function renderTimeline() {
             tip.innerText = `${roundStr}${detailStr} (時間變化: ${timeChangeStr}, 剩餘: ${timeAfterStr})`;
             segment.appendChild(tip);
 
-            segment.onclick = () => {
-                segment.classList.toggle('enlarged');
-                segment.style.zIndex = zIndexCounter++;
-            };
+            segment.addEventListener('click', function(event) {
+                this.classList.toggle('enlarged');
+                this.style.zIndex = zIndexCounter++;
+                event.stopPropagation();
+            });
 
             eventsDiv.appendChild(segment);
         });
