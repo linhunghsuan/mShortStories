@@ -1,5 +1,8 @@
 // script.js
-
+window.onload = function() {
+    // 假設遊戲初始停留在設定階段
+    updateActionButtonsVisibility('setup');
+};
 // ========= 全域遊戲狀態變數 =========
 let gameStateBeforeNextRound = null;
 let currentBidding = {
@@ -104,6 +107,7 @@ function selectPlayerCountUI(count) {
         document.getElementById('startButton').disabled = true;
         document.getElementById('characterSelectionError').textContent = '';
     }
+    updateActionButtonsVisibility('characterSelection');
 }
 
 function displayCharacterSelection(playerCount) {
@@ -173,6 +177,7 @@ function confirmCharacterSelections() {
         document.getElementById('startButton').disabled = true;
         errorMsgElement.style.color = 'red';
     }
+    updateActionButtonsVisibility('setup');
 }
 
 function startGame() {
@@ -221,6 +226,7 @@ function startGame() {
     document.getElementById('backToMarketSelectionBtn').style.display = 'none';
     drawMarket();
     renderTimeline(); // 初始渲染時間軸
+    updateActionButtonsVisibility('marketSelection');
 }
 
 // ========= 市場階段函式 =========
@@ -287,6 +293,7 @@ function confirmMarket() {
     document.getElementById('backToMarketSelectionBtn').style.display = 'inline-block';
 
     marketStep();
+    updateActionButtonsVisibility('playerActions');
 }
 
 function marketStep() {
@@ -350,6 +357,7 @@ function backToMarketSelection() {
     document.getElementById('backToMarketSelectionBtn').style.display = 'none';
     document.getElementById('nextRoundBtn').disabled = true;
     drawMarket();
+    updateActionButtonsVisibility('marketSelection');
 }
 
 // ========= 玩家行動函式 =========
@@ -435,6 +443,7 @@ function adjustPlayerTimeManually(playerId, amount) {
         timeAfter: playerTimes[playerId],
         round: round
     });
+    console.log(`玩家 ${playerId} 手動調整時間： ${amount > 0 ? '+' : ''}${amount}。新時間: ${playerTimes[playerId]}`);
 
     updateTimeBar(playerId);
     renderTimeline();
@@ -451,6 +460,7 @@ async function nextRound() {
         marketCards: [...marketCards]
     };
 
+    const cardSelections = {}; // 用於追蹤每張卡片被哪些玩家選擇
     for (const player of players) {
         const action = playerActions[player];
         if (action === '休息') {
@@ -462,31 +472,58 @@ async function nextRound() {
                 timeAfter: playerTimes[player],
                 round: round
             });
+            updateTimeBar(player);
+            console.log(`玩家 ${player} 恢復時間： ${REST_RECOVERY_AMOUNT}`);
         } else if (typeof action === 'number' && cardData[action]) {
-            const cardId = action;
-            const cardInfo = cardData[cardId];
-            const bidders = players.filter(p => playerActions[p] === cardId);
-
-            if (bidders.length > 0) {
-                console.log(`卡片 ${cardInfo.name} 開始競標，競標者：${bidders.join(', ')}`);
-                const biddingResultCancelled = await performBiddingProcess(cardId, bidders);
-                if (!biddingResultCancelled) {
-                    availableCards = availableCards.filter(id => id !== cardId);
-                }
-            } else {
-                console.log(`卡片 ${cardInfo.name} 無人競標`);
-                bidders.forEach(p => {
-                    timeline[p].push({
-                        type: 'buy_fail',
-                        detail: `無人競標：${cardInfo.name}(${cardInfo.price})`,
-                        timeChange: 0,
-                        timeAfter: playerTimes[p],
-                        round: round
-                    });
-                });
+            if (!cardSelections[action]) {
+                cardSelections[action] = [];
             }
+            cardSelections[action].push(player);
         }
-        updateTimeBar(player);
+    }
+
+    // 處理卡片購買和競標
+    for (const cardId in cardSelections) {
+        const bidders = cardSelections[cardId];
+        const cardInfo = cardData[parseInt(cardId)];
+
+        if (bidders.length > 1) {
+            // 超過一位玩家選擇，進入競標
+            console.log(`卡片 ${cardInfo.name} 開始競標，競標者：${bidders.join(', ')}`);
+            const biddingResultCancelled = await performBiddingProcess(parseInt(cardId), bidders);
+            if (!biddingResultCancelled) {
+                availableCards = availableCards.filter(id => id !== parseInt(cardId));
+            }
+        } else if (bidders.length === 1) {
+            // 只有一位玩家選擇，直接購買
+            const winner = bidders[0];
+            const purchaseCost = cardInfo.price;
+            if (playerTimes[winner] >= purchaseCost) {
+                playerTimes[winner] -= purchaseCost;
+                timeline[winner].push({
+                    type: 'buy',
+                    detail: `直接購買：${cardInfo.name}(花費 ${purchaseCost})`,
+                    timeChange: -purchaseCost,
+                    timeAfter: playerTimes[winner],
+                    round: round
+                });
+                availableCards = availableCards.filter(id => id !== parseInt(cardId));
+                console.log(`玩家 ${winner} 直接購買卡片 ${cardInfo.name}`);
+            } else {
+                timeline[winner].push({
+                    type: 'buy_fail',
+                    detail: `購買失敗：${cardInfo.name}(需時 ${purchaseCost}，時間不足)`,
+                    timeChange: 0,
+                    timeAfter: playerTimes[winner],
+                    round: round
+                });
+                console.log(`玩家 ${winner} 時間不足，無法購買卡片 ${cardInfo.name}`);
+            }
+            updateTimeBar(winner);
+        } else {
+            // 無人選擇的卡片，不進行任何操作
+            console.log(`卡片 ${cardInfo.name} 無人選擇`);
+        }
     }
 
     playerActions = {};
@@ -499,6 +536,7 @@ async function nextRound() {
     round++;
     document.getElementById('roundTitle').textContent = '第' + round + '回合';
     renderTimeline();
+    updateActionButtonsVisibility('marketSelection');
 }
 
 async function performBiddingProcess(cardId, bidders) {
@@ -817,7 +855,7 @@ function renderTimeline() {
             let symbol = '?';
             if (e.type === 'rest') symbol = '休';
             else if (e.type === 'buy') symbol = '買';
-            else if (e.type === 'buy_fail') symbol = 'X'; // 購買失敗符號
+            else if (e.type === 'buy_fail') symbol = 'X';
             else if (e.type === 'bidding') {
                 if (e.subtype === 'win') symbol = '標✓';
                 else if (e.subtype === 'tie_fail') symbol = '流';
@@ -827,10 +865,8 @@ function renderTimeline() {
                 else symbol = '競';
             } else if (e.type === 'phase_tick') {
                 symbol = '●';
-                // segment.style.color = '#546E7A'; // phase_tick 顏色由CSS處理
             } else if (e.type === 'manual_adjust') {
                 symbol = e.subtype === 'plus' ? '➕' : '➖';
-                // 文字顏色由 CSS .event.manual_adjust 控制
             }
             segment.textContent = symbol;
 
@@ -845,6 +881,7 @@ function renderTimeline() {
 
             segment.addEventListener('click', function(event) {
                 this.classList.toggle('enlarged');
+                this.classList.toggle('show-tooltip'); // 同時切換 Tooltip 顯示
                 this.style.zIndex = zIndexCounter++;
                 event.stopPropagation();
             });
@@ -852,7 +889,40 @@ function renderTimeline() {
             eventsDiv.appendChild(segment);
         });
     });
+
+    // 點擊 document 隱藏所有放大的事件和 Tooltip
+    document.addEventListener('click', function() {
+        const enlargedEvents = document.querySelectorAll('.event.enlarged');
+        enlargedEvents.forEach(event => {
+            event.classList.remove('enlarged');
+            event.classList.remove('show-tooltip');
+        });
+    });
 }
+
+function updateActionButtonsVisibility(stage) {
+            const confirmMarketBtn = document.getElementById('confirmMarket');
+            const resetMarketBtn = document.getElementById('resetMarketSelectionBtn');
+            const backToMarketBtn = document.getElementById('backToMarketSelectionBtn');
+            const nextRoundBtn = document.getElementById('nextRoundBtn');
+
+            confirmMarketBtn.style.display = 'none';
+            resetMarketBtn.style.display = 'none';
+            backToMarketBtn.style.display = 'none';
+            nextRoundBtn.style.display = 'none';
+
+            switch (stage) {
+                case 'marketSelection':
+                    confirmMarketBtn.style.display = 'inline-block';
+                    resetMarketBtn.style.display = 'inline-block';
+                    break;
+                case 'playerActions':
+                    backToMarketBtn.style.display = 'inline-block';
+                    nextRoundBtn.style.display = 'inline-block';
+                    break;
+                // 其他階段可以根據需要添加
+            }
+        }
 
 const consoleHistory = [];
 
@@ -870,25 +940,54 @@ const consoleHistory = [];
 
 function downloadConsoleLog() {
     const cleanedLines = consoleHistory.map(entry =>
-        entry.args.join(' ')
+        `[${entry.method.toUpperCase()}] ${entry.args.join(' ')}`
     );
+    const logContent = cleanedLines.join('\n');
 
-    // Step 1: 玩家人數
-    const playerCount = selectedPlayerCount
-
-    // Step 2: 組合檔名
-    const now = new Date();
-    const dateStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
-    const filename = `${dateStr} 玩家人數${playerCount} 總共進行${round}回.TXT`;
-
-    // Step 4: 建立下載連結
-    const blob = new Blob([cleanedLines.join('\n')], {
-        type: 'text/plain'
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+    // 建立並開啟一個新的視窗
+    const logWindow = window.open('', '_blank');
+    if (logWindow) {
+        // 將紀錄內容寫入新視窗的 document 中
+        logWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="zh-Hant">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>遊戲紀錄</title>
+                <style>
+                    body {
+                        font-family: monospace;
+                        white-space: pre-wrap; /* 保留空白和換行 */
+                        padding: 20px;
+                        line-height: 1.5;
+                        background-color: #f4f4f4;
+                        color: #333;
+                    }
+                    .close-button {
+                        position: fixed;
+                        top: 10px;
+                        right: 10px;
+                        padding: 8px 12px;
+                        background-color: #ddd;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 0.9em;
+                    }
+                    .close-button:hover {
+                        background-color: #ccc;
+                    }
+                </style>
+            </head>
+            <body>
+                <pre>${logContent}</pre>
+                <button class="close-button" onclick="window.close()">關閉</button>
+            </body>
+            </html>
+        `);
+        logWindow.document.close(); // 完成寫入
+    } else {
+        alert('無法開啟新的視窗，請檢查您的瀏覽器設定。');
+    }
 }

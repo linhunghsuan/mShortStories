@@ -8,7 +8,9 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    padding-left: 80px; /* 為垂直導航欄預留空間 */
 }
+
 
 .app-container {
     display: flex;
@@ -22,6 +24,12 @@ body {
     padding: 15px;
     text-align: center;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+    position: fixed; /* 固定在頂部 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100; /* 確保在內容之上 */
+    padding-left: 80px; /* 為垂直導航欄預留空間 */
 }
 
 .app-header h1 {
@@ -33,7 +41,97 @@ body {
 .app-content {
     flex-grow: 1;
     padding: 15px;
-    overflow-y: auto; /* 內容超出時可滾動 */
+    padding-top: calc(15px + 50px); /* 為固定 header 預留空間 */
+    padding-bottom: 60px;
+    overflow-y: auto;
+}
+
+.app-navigation {
+    position: fixed;
+    top: 50px; /* 在 header 下方 */
+    left: 0;
+    bottom: 50px; /* 在 footer 上方 */
+    width: 70px;
+    background-color: #f8f8f8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+    box-shadow: 1px 0 2px rgba(0, 0, 0, 0.1);
+    z-index: 99; /* 在內容之上 */
+}
+
+.app-navigation button {
+    width: 60px;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #eee;
+    color: #333;
+    cursor: pointer;
+    font-size: 0.8em;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.app-navigation button:hover {
+    background-color: #ddd;
+}
+
+.app-navigation .scroll-adjust {
+    margin-top: auto; /* 推到導航底部 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.app-navigation .scroll-adjust button {
+    width: 60px;
+    margin-bottom: 5px;
+    font-size: 0.7em;
+    padding: 5px;
+}
+
+
+.fixed-action-buttons {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #f8f8f8;
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.fixed-action-buttons button {
+    flex-grow: 1;
+    margin: 0 5px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    text-align: center;
+}
+
+.fixed-action-buttons button.primary-button {
+    background-color: #007aff;
+    color: white;
+}
+
+.fixed-action-buttons button.secondary-button {
+    background-color: #f0f0f7;
+    color: #007aff;
+    border: 1px solid #007aff;
 }
 
 h2, h3, h4 {
@@ -256,7 +354,6 @@ button:disabled {
     color: white;
     border-color: #007aff;
 }
-
 .round-controls {
     justify-content: space-between;
     margin-top: 20px;
@@ -284,17 +381,66 @@ button:disabled {
     display: flex;
     align-items: center;
     min-height: 40px;
-    padding: 10px 0;
+    padding: 60px 60px;
+    padding-left: 40px;
 }
 
 .event {
-    background-color: #007aff;
     color: white;
     border-radius: 5px;
     padding: 8px 10px;
     margin-right: 5px;
     font-size: 0.8em;
     white-space: nowrap;
+    display: inline-flex; /* 使其能包含 Tooltip */
+    position: relative; /* Tooltip 相對定位 */
+    align-items: center;
+    justify-content: center; /* 讓文字居中 */
+    min-width: 30px; /* 確保有基本寬度 */
+}
+
+.event.rest {
+    background-color: #4CAF50; /* 休息：綠色 */
+}
+
+.event.buy {
+    background-color: #007bff; /* 購買成功：藍色 */
+}
+
+.event.buy_fail {
+    background-color: #dc3545; /* 購買失敗：紅色 */
+}
+
+.event.bidding {
+    background-color: #ffc107; /* 競標中：黃色 */
+    color: #333; /* 確保文字顏色 */
+}
+
+.event.bidding.win {
+    background-color: #28a745; /* 競標成功：更深的綠色 */
+}
+
+.event.bidding.tie_fail {
+    background-color: #6c757d; /* 平手流標：灰色 */
+}
+
+.event.bidding.pass_all,
+.event.bidding.pass {
+    background-color: #f8f9fa; /* 放棄競標：淺灰色 */
+    color: #333;
+    border: 1px solid #ccc; /* 增加邊框以區分 */
+}
+
+.event.bidding.lose {
+    background-color: #e03131; /* 競標失敗：更深的紅色 */
+}
+
+.event.phase_tick {
+    background-color: #6f42c1; /* 回合推進：紫色 */
+}
+
+.event.manual_adjust {
+    background-color: #fd7e14; /* 手動調整：橘色 */
 }
 
 .app-footer {
@@ -302,6 +448,12 @@ button:disabled {
     text-align: center;
     box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.1);
     background-color: #f0f0f7;
+    position: fixed; /* 固定在底部 */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100; /* 確保在內容之上 */
+    padding-left: 80px; /* 為垂直導航欄預留空間 */
 }
 
 /* Tooltip 樣式 (App 風格) */
@@ -316,58 +468,90 @@ button:disabled {
     z-index: 10;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease, visibility 0s linear 0.3s; /* 延遲隱藏 */
 }
 
-.event:hover .tooltip {
+.event.enlarged {
+    transform: scale(1.4); /* 放大兩倍，您可以調整 */
+    z-index: 101; /* 確保在其他元素之上 */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    /* 可以添加其他放大後的樣式，例如更大的 padding */
+}
+
+.event.show-tooltip .tooltip {
     opacity: 1;
     visibility: visible;
+    transition-delay: 0s; /* 立即顯示 */
 }
 
 .tooltip-top {
-    bottom: 100%;
-    margin-bottom: 5px;
+    bottom: calc(100% + 5px);
+    right: auto;
+    left: 0;
 }
-
 .tooltip-bottom {
-    top: 100%;
-    margin-top: 5px;
+    top: calc(100% + 5px);
+    right: auto;
+    left: 0;
 }
 
 /* 手機螢幕優化 */
 @media (max-width: 600px) {
-    .card-grid button {
-        flex-basis: 100%; /* 單列排布 */
+    body {
+        padding-left: 0; /* 移除左邊的 padding */
+        padding-bottom: 60px; /* 為底部導航欄預留空間 */
     }
 
-    .actions button {
-        flex-basis: 100%;
+    .app-header {
+        padding-left: 0;
     }
 
-    .button-group {
-        flex-direction: column;
+    .app-content {
+        padding-top: calc(15px + 50px);
+        padding-bottom: 15px;
     }
 
-    .character-selector-wrapper {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .character-selector-wrapper label {
-        margin-bottom: 5px;
-        width: auto;
-    }
-
-    .action-buttons {
-        flex-direction: column;
-    }
-
-    .round-controls {
-        flex-direction: column;
-    }
-
-    .manual-time-controls {
-        flex-direction: row; /* 在小螢幕上保持水平 */
+    .app-navigation {
+        top: auto;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 50px;
+        flex-direction: row;
         justify-content: space-around;
+        align-items: center;
+        padding: 0 10px;
+        box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .app-navigation button {
+        width: auto;
+        margin: 0;
+        font-size: 0.7em;
+        padding: 5px 8px;
+        flex-direction: column;
+    }
+
+    .app-navigation .scroll-adjust {
+        display: none; /* 在底部導航中隱藏微調按鈕 */
+    }
+
+    .app-footer {
+        padding-left: 0;
+    }
+
+    .timeline-events {
+        padding: 10px;
+    }
+
+    .event {
+        font-size: 0.7em;
+        padding: 5px 8px;
+        min-width: auto; /* 允許更小的寬度 */
+    }
+
+    .tooltip {
+        font-size: 0.7em;
+        padding: 5px;
     }
 }

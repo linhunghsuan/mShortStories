@@ -7,10 +7,21 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <div class="app-container">
+        <div class="app-container">
         <header class="app-header">
             <h1>故事卡競拍</h1>
         </header>
+
+        <aside class="app-navigation">
+            <button onclick="scrollToSection('roundTitle')">第 <span id="navRoundNumber">1</span> 回合</button>
+            <button onclick="scrollToSection('timelineSection')">時間軸</button>
+            <button onclick="scrollToTop()">最上</button>
+            <button onclick="scrollToBottom()">最下</button>
+            <div class="scroll-adjust">
+                <button onclick="scrollByAmount(-50)">微調向上</button>
+                <button onclick="scrollByAmount(50)">微調向下</button>
+            </div>
+        </aside>
 
         <main class="app-content">
             <section class="setup-section" id="setupSection">
@@ -33,6 +44,7 @@
                 </div>
 
                 <button id="startButton" class="primary-button" onclick="startGame()" disabled>開始遊戲</button>
+                
             </section>
 
             <section class="game-section" id="gameSection" style="display:none;">
@@ -43,11 +55,7 @@
                     <h3>選擇本回合的市場卡片</h3>
                     <div id="marketArea" class="card-grid">
                         </div>
-                    <div class="action-buttons">
-                        <button id="confirmMarket" class="primary-button" onclick="confirmMarket()" disabled>確定</button>
-                        <button id="resetMarketSelectionBtn" onclick="resetMarketCardSelection()">重設</button>
                     </div>
-                </div>
 
                 <div id="playerActions" class="player-actions-area" style="display:none;">
                     <h3>玩家行動</h3>
@@ -87,11 +95,7 @@
                             <div class="actions" id="actionsC"></div>
                         </div>
                     </div>
-                    <div class="action-buttons round-controls">
-                        <button id="backToMarketSelectionBtn" onclick="backToMarketSelection()" style="display:none;">返回</button>
-                        <button id="nextRoundBtn" class="primary-button" onclick="nextRound()" disabled>下一回合</button>
                     </div>
-                </div>
             </section>
 
             <section class="timeline-section" id="timelineSection" style="display:none;">
@@ -109,13 +113,38 @@
                     <div class="timeline-events" id="eventsC"></div>
                 </div>
             </section>
-        </main>
 
-        <footer class="app-footer">
-            <button id="downloadConsoleLog" class="secondary-button" onclick="downloadConsoleLog()">匯出紀錄</button>
-        </footer>
+            <div class="fixed-action-buttons">
+                <button id="resetMarketSelectionBtn" onclick="resetMarketCardSelection()" style="display:none;">重設</button>
+                <button id="confirmMarket" class="primary-button" onclick="confirmMarket()" style="display:none;">確定</button>
+                <button id="backToMarketSelectionBtn" onclick="backToMarketSelection()" style="display:none;">返回</button>
+                <button id="nextRoundBtn" class="primary-button" onclick="nextRound()" style="display:none;">下一回合</button>
+                <button id="downloadConsoleLog" class="secondary-button" onclick="downloadConsoleLog()">匯出紀錄</button>
+            </div>
+        </main>
     </div>
 
     <script src="./script.js" defer></script>
+    <script>
+        function scrollToSection(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToBottom() {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function scrollByAmount(amount) {
+            window.scrollBy({ top: amount, behavior: 'smooth' });
+        }
+
+    </script>
 </body>
 </html>
