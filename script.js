@@ -122,14 +122,14 @@ function displayCharacterSelection(playerCount) {
             div.className = 'character-selector-wrapper';
             const label = document.createElement('label');
             label.htmlFor = `characterSelect${playerID}`;
-            label.textContent = `玩家 ${playerID} 選擇角色: `;
+            label.textContent = `玩家 ${playerID} : `;
             const select = document.createElement('select');
             select.id = `characterSelect${playerID}`;
             select.innerHTML = '<option value="">--請選擇角色--</option>';
             characterNames.forEach(charNameKey => {
                 const option = document.createElement('option');
                 option.value = charNameKey;
-                option.textContent = `${characterSettings[charNameKey].name} (起始時間: ${characterSettings[charNameKey].startTime})`;
+                option.textContent = `${characterSettings[charNameKey].name} ( ${characterSettings[charNameKey].startTime})`;
                 select.appendChild(option);
             });
             div.appendChild(label);
@@ -210,7 +210,7 @@ function startGame() {
         playerTimes[p_id] = character.startTime;
 
         document.querySelector(`#player${p_id} > h4`).textContent = `${p_id}玩家 (${character.name})`;
-        document.querySelector(`#timeline${p_id} > h3`).textContent = `${p_id}玩家 (${character.name}) (${character.specialAbility}) 時間軸`;
+        document.querySelector(`#timeline${p_id} > h3`).textContent = `${p_id}玩家 (${character.name}) 時間軸`;
 
         timeline[p_id] = [];
         updateTimeBar(p_id);
