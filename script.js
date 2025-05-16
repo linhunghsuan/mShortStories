@@ -248,9 +248,8 @@ function drawMarket() {
             console.error(`drawMarket: 找不到卡片ID ${cardId} 的資料！`);
             return;
         }
-        btn.textContent = `${cardInfo.name} (需時: ${cardInfo.price})`;
-        btn.style.backgroundColor = '#f8f8f8';
-        btn.style.color = '#333';
+        btn.className = 'button';
+        btn.textContent = `${cardInfo.name}(價:${cardInfo.price})`;
         btn.onclick = () => toggleMarketCard(cardId, btn);
         marketArea.appendChild(btn);
     });
@@ -588,7 +587,7 @@ function promptNextBidder() {
     }
 
     const actionButtons = document.createElement('div');
-    actionButtons.className = 'action-buttons';
+    actionButtons.className = 'actions-buttons';
 
     const passBtn = document.createElement('button');
     passBtn.textContent = '放棄';

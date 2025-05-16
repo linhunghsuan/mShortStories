@@ -16,7 +16,7 @@
 
         <nav class="top-navigation">
             <div class="nav-row">
-                <button onclick="scrollToSection('roundTitle')">市場區</button>
+                <button onclick="scrollToSection('gameSection')">市場區</button>
                 <button onclick="scrollToTop()">最上</button>
                 <button class="scroll-adjust-button" onclick="scrollByAmount(-200)">微調向上</button>
             </div>
@@ -30,7 +30,6 @@
         <main class="app-content">
             <section class="setup-section" id="setupSection">
                 <h2>遊戲設定</h2>
-
                 <div class="setup-section">
                     <div class="setup-heading-group">
                         <h3>1. 選擇人數</h3>
@@ -45,7 +44,7 @@
 
                 <div id="characterSelectionUI" class="setup-section" style="display:none;">
                     <div class="setup-heading-group">
-                        <h3>2. 選擇角色 <span class="subtitle">(不同玩家請選擇不同角色)</span></h3>
+                        <h3>2. 選擇角色 <span class="subtitle">(請選擇不同角色)</span></h3>
                         <button id="confirmCharactersButton" onclick="confirmCharacterSelections()">確認角色</button>
                     </div>
                     <div id="characterSelectorsContainer">
@@ -125,11 +124,13 @@
     </section>
 
     <div class="fixed-action-buttons">
-        <button id="resetMarketSelectionBtn" onclick="resetMarketCardSelection()" style="display:none;">重設</button>
-        <button id="confirmMarket" class="primary-button" onclick="confirmMarket()" style="display:none;">確定</button>
-        <button id="backToMarketSelectionBtn" onclick="backToMarketSelection()" style="display:none;">返回</button>
-        <button id="nextRoundBtn" class="primary-button" onclick="nextRound()" style="display:none;">下一回合</button>
-        <button id="downloadConsoleLog" class="secondary-button" onclick="downloadConsoleLog()">匯出紀錄</button>
+        <button id="resetMarketSelectionBtn" class="button" onclick="resetMarketCardSelection()"
+            style="display:none;">重設</button>
+        <button id="confirmMarket" class="button" onclick="confirmMarket()" style="display:none;">確定</button>
+        <button id="backToMarketSelectionBtn" class="button" onclick="backToMarketSelection()"
+            style="display:none;">返回</button>
+        <button id="nextRoundBtn" class="button" onclick="nextRound()" style="display:none;">下一回合</button>
+        <button id="downloadConsoleLog" class="button" onclick="downloadConsoleLog()">匯出紀錄</button>
     </div>
     </main>
     </div>
@@ -138,10 +139,16 @@
     <script>
         function scrollToSection(elementId) {
             const element = document.getElementById(elementId);
+            if (elementId === 'gameSection') {
+                element.style.display = 'block'; // 顯示出來
+            }
             if (element) {
-                element.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
+                const yOffset = -200; // 向上偏移避免被遮住，根據 .top-navigation 高度調整
+                const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+                window.scrollTo({
+                    top: y,
+                    behavior: 'smooth'
                 });
             }
         }
